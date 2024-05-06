@@ -139,7 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="P3-SkipList.cpp" />
+    <ClCompile Include="P3-SkipListMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SkipList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
