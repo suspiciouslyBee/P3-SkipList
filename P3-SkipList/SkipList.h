@@ -9,7 +9,10 @@
 * this also contains an internal Quad Node
 */
 
+#include <random>
+
 using namespace std;
+
 template <typename KeyComparable, typename Value>
 class SkipList {
 private:
