@@ -61,8 +61,15 @@ public:
 
 
 	void resetIt(int i = 0) {
-		//reset iterator with optional arg to designate layers to decend
-		//does have OOB check
+		/*
+		* reset iterator with optional arg to designate layers to decend
+		* that meaning, to decend, invert the value. "If I want to go to layer
+		* 2 from the ceiling, I will need to go down 3 floors"
+		* 
+		* does have OOB check as well, negative numbers default to upper left
+		* oob positives default to known layer height.
+		* make sure the sentinel is defined downwards!!
+		*/
 		iterator = sentinel;
 
 
