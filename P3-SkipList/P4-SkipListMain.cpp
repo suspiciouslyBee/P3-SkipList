@@ -21,7 +21,7 @@ int main()
         cout << "This should be a good distribution\n";
 
         for (i = 0; i <= tries; i++) {
-            if ((rand() & 1)) {
+            if ((rand() & 7)) {
                 heads++;
             }
             else {

@@ -24,6 +24,7 @@
     <ProjectGuid>{b3221887-67bb-41e6-901e-77d85213fda2}</ProjectGuid>
     <RootNamespace>P3SkipList</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>P4-SkipList</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -139,7 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="P3-SkipListMain.cpp" />
+    <ClCompile Include="P4-SkipListMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SkipList.h" />

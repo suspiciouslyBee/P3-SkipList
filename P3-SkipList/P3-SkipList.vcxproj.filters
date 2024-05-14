@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="P3-SkipListMain.cpp">
+    <ClCompile Include="P4-SkipListMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
