@@ -110,6 +110,9 @@ private:
 		*/
 
 		resetIt(); //put it to the top layer
+		
+		//note to self: should check if we can go down in order to handle if
+		//next node is nullptr (which means infinity)
 
 		//this handles when there is a next value
 		while (hasMore()) {//scan loop
