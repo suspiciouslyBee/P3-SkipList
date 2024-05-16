@@ -27,13 +27,13 @@ private:
 		}
 	};
 
-	class QuadNode : QuadNode{
+	class QuadNode : QuadPtr {
 	public:
 
 		KeyComparable key;
 		Value value;
 
-		QuadNode(KeyComparable& key, Value& value) : key(key), value(value){
+		QuadNode(KeyComparable& key, Value& value) : key(key), value(value) {
 		}
 	};
 
@@ -50,62 +50,129 @@ private:
 		}
 	}
 
+	bool itUp() {
+		if (iterator->up != nullptr) {
+			iterator = iterator->up;
+			return true;
+		}
+		return false;
+	}
 
-public:
+	bool itDown() {
+		if (iterator->down != nullptr) {
+			iterator = iterator->down;
+			return true;
+		}
+		return false;
+	}
 
+	bool itNext() {
+		if (iterator->next != nullptr) {
+			iterator = iterator->next;
+			return true;
+		}
+		return false;
+	}
 
-	SkipList() {
-		sentinel = new QuadPtr();
-		layers = 0;
+	bool itPrev() {
+		if (iterator->prev != nullptr) {
+			iterator = iterator->prev;
+			return true;
+		}
+		return false;
+	}
+
+	bool hasMore() {
+		return iterator->next != nullptr;
+	}
+	
+	KeyComparable nextKey() {
+		return iterator->next->key;
+	}
+	KeyComparable thisKey() {
+		return iterator->key;
 	}
 
 
-	void resetIt(int i = 0) {
+	bool find(const KeyComparable& key) {
 		/*
-		* reset iterator with optional arg to designate layers to decend
-		* that meaning, to decend, invert the value. "If I want to go to layer
-		* 2 from the ceiling, I will need to go down 3 floors"
-		* 
-		* does have OOB check as well, negative numbers default to upper left
-		* oob positives default to known layer height.
-		* make sure the sentinel is defined downwards!!
+		* internal find function.
+		*
+		* on true:
+		* there's a match; iterator points to node
+		*
+		* on false:
+		* no match; iterator points to node immedately less.
+		*
+		* WARNING: this ASSUMES next->key exists. please make sure the node
+		* has a key
+		*
 		*/
-		iterator = sentinel;
 
+		resetIt(); //put it to the top layer
 
-	
-		if (i > layers) { //idiot check
-				i = layers;
-		}
-			while((iterator->down != nullptr) && (i > 0)){
-				iterator = iterator->down;
+		//this handles when there is a next value
+		while (hasMore()) {//scan loop
+			while (key >= nextKey()) {
+				itNext();
+				if (key == thisKey()) {
+					return true;
+				}
 			}
-		}
-	
 
-	}
-
-
-	bool insert(Value& value, KeyComparable& key) {
-		resetIt();	//sentinel garunteed to be upper left
-
-		while ((iterator->next != nullptr)) {//scan layer
-			if (iterator->next->key == key) {
-				//duplicate!
+			if (!(itDown()) {
+				// if we cant try to go down, this is it!
 				return false;
 			}
-			if (iterator->next->key > key) {
-				//next element is greater than our key
-				iterator = iterator->next;
+		}
+
+		//if we are here, the next node is nullptr, which could mean infinity
+
+
+
+
+
+
+	public:
+
+
+		SkipList() {
+			sentinel = new QuadPtr();
+			layers = 0;
+		}
+
+
+		void resetIt(int i = 0) {
+			/*
+			* Usage: Specify the layer to reset the iterator to.
+			*
+			* Default value is the top layer, but this can be overridden.
+			*/
+			if (i > layers) {
+				i = layers;
 			}
-			if (iterator->next->key < key) {
-				//redundant check but paranoid lol
-				//next element is LESS than our key
-				break;//break loop, need to move down
+			if (i < 0) {
+				i = 0;
+			}
+
+
+			//point our iterator to the sentinel, which is garunteed to be the
+			//upper right most node (which is nulled)
+			iterator = sentinel;
+			while ((iterator->down != nullptr) && (i > 0)) {
+				iterator = iterator->down;
+				i--;
 			}
 		}
+
+
+		bool insert(Value & value, KeyComparable & key) {
+			resetIt();	//sentinel garunteed to be upper left
+
+
+		}
 	}
-	
+
 
 };
 
