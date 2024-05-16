@@ -59,11 +59,15 @@ private:
 	}
 
 	bool itDown() {
-		if (iterator->down != nullptr) {
+		if (hasDown()) {
 			iterator = iterator->down;
 			return true;
 		}
 		return false;
+	}
+
+	bool hasDown() {
+		return iterator->down != nullptr;
 	}
 
 	bool itNext() {
@@ -115,6 +119,7 @@ private:
 		//next node is nullptr (which means infinity)
 
 		//this handles when there is a next value
+		
 		while (hasMore()) {//scan loop
 			while (key >= nextKey()) {
 				itNext();
