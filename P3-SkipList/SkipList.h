@@ -18,22 +18,39 @@ class SkipList {
 private:
 	class QuadPtr {
 	public:
-		QuadPtr* up, left, right, down;
 
-		QuadNode(QuadPtr* up = nullptr, QuadPtr* down = nullptr,
+		QuadPtr* up;
+		QuadPtr* prev;
+		QuadPtr* next; 
+		QuadPtr* down;
+
+
+		QuadPtr(QuadPtr* up = nullptr, QuadPtr* down = nullptr,
 			QuadPtr* prev = nullptr, QuadPtr* next = nullptr) : up(up),
-			right(right), left(left), down(down) {
+			next(next), prev(prev), down(down) {
 		}
+
+		virtual bool hasData() = 0;
 	};
 
-	class QuadNode : QuadPtr {
+	class QuadNode : public QuadPtr {
 	public:
 
 		KeyComparable key;
 		Value value;
 
-		QuadNode(KeyComparable& key, Value& value) : key(key), value(value) {
+		QuadNode(KeyComparable& key, Value& value) : QuadPtr(), key(key), value(value) {
 		}
+
+		QuadNode(
+			QuadPtr* up, QuadPtr* down,
+			QuadPtr* prev, QuadPtr* next,
+			KeyComparable& key, Value& value)
+			: QuadPtr(up, down, prev, next), key(key), value(value) {
+		}
+
+
+
 	};
 
 
@@ -44,7 +61,7 @@ private:
 
 	//internal iterator
 	//TODO: port this to be compatible with STL
-	mutable QuadPtr* iterator;
+	mutable QuadNode* iterator;
 
 	int randLayers() { //helper to find number of additional layers
 		int i = 1;
@@ -121,7 +138,7 @@ private:
 
 
 	bool isRootLayer() {
-		if (!hasDown() && (hasUp() || (layers == 1)) {
+		if (!hasDown() && ((hasUp() || (layers == 1)))) {
 			return true;
 		}
 		return false;
@@ -138,14 +155,14 @@ private:
 
 
 	KeyComparable nextKey() {
-		return iterator->next->key;
+		return iterator.getKey();
 	}
 	KeyComparable thisKey() {
 		return iterator->key;
 	}
 
 
-	QuadNode* find(const KeyComparable& key) {
+	QuadNode* findNode(const KeyComparable& key) {
 		/*
 		* internal find function.
 		*
@@ -179,7 +196,7 @@ private:
 
 		if (!isRootLayer()) {
 			itDown();
-			return find(key);
+			return findNode(key);
 		}
 
 	}
@@ -212,7 +229,7 @@ public:
 		*/
 
 		resetIt(); //put it to the top layer
-		find(key);
+		findNode(key);
 		return hasCurr() && (thisKey() == key);
 	}
 
@@ -310,15 +327,15 @@ public:
 		}
 	}
 
-	void printList(std::ostream& out = cout) const {
+	void printList(std::ostream& out = cout) {
 		//debugging print, prints entire list
-		out << "Printing List!\n\n":
+		out << "Printing List!\n\n";
 
 	
 
-		for (int i = 0; i < layer; i++) {	//start at top layer
+		for (int i = 0; i < layers; i++) {	//start at top layer
 			resetIt(i);
-			out << "Layer " << layer - i << ": ";
+			out << "Layer " << layers - i << ": ";
 			while (itNext()) {
 				//if we can move forward, key is valid
 				cout << thisKey();
