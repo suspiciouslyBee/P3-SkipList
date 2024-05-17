@@ -40,8 +40,11 @@ private:
 	// we need to make sure that this is at the top corner
 	//the sentinel ptr will be at the top of the sentinel "column"
 	QuadPtr* sentinel;
-	mutable QuadPtr* iterator;
 	int layers;
+
+	//internal iterator
+	//TODO: port this to be compatible with STL
+	mutable QuadPtr* iterator;
 
 	int randLayers() { //helper to find number of additional layers
 		int i = 1;
@@ -53,8 +56,25 @@ private:
 	// Functions for checking the state of the iterator... Perhaps I should 
 	// make an iterator class at some point?
 
+	bool hasDown() {
+		return iterator->down != nullptr;
+	}
+	bool hasUp() {
+		return iterator->up != nullptr;
+	}
+	bool hasNext() {
+		return iterator->next != nullptr;
+	}
+	bool hasPrev() {
+		return iterator->prev != nullptr;
+	}
+	bool hasCurr() {
+		return iterator != nullptr;
+	}
+
+
 	bool itUp() {
-		if (iterator->up != nullptr) {
+		if (hasUp()) {
 			iterator = iterator->up;
 			return true;
 		}
@@ -68,32 +88,37 @@ private:
 		return false;
 	}
 	bool itNext() {
-		if (iterator->next != nullptr) {
+		if (hasNext()) {
 			iterator = iterator->next;
 			return true;
 		}
 		return false;
 	}
 	bool itPrev() {
-		if (iterator->prev != nullptr) {
+		if (hasPrev()) {
 			iterator = iterator->prev;
 			return true;
 		}
 		return false;
 	}
+	bool itJump() {
+		/*
+		* jumps to higher layer, goes up or goes back until it can
+		*
+		* while we try (and fail) to go up, try to go back.
+		* should we fail to go back (i.e. end of list), we fail
+		* otherwise we succeed
+		*/
+		while (!itUp()) {
+			if (!itPrev()) {
+				return false;
+			}
+			return true;
+		}
 
-	bool hasDown() {
-		return iterator->down != nullptr;
 	}
-	bool hasUp() {
-		return iterator->up != nullptr;
-	}
-	bool hasNext() {
-		return iterator->next != nullptr;
-	}
-	bool hasCurr() {
-		return iterator != nullptr;
-	}
+
+
 
 	bool isRootLayer() {
 		if (!hasDown() && (hasUp() || (layers == 1)) {
@@ -224,60 +249,83 @@ public:
 		* "dumb" helper that inserts after iterator's current node
 		* It must insert AFTER the current node, incase there are no nodes.
 		* The root node is a base QuadPtr class, which cannot store "value"
-		* 
+		*
 		* Generate number of layers to include, if the number is larger than
 		* what we already have... update it!
-		* 
+		*
 		* Notice: Function allocates dynamic memory!
 		*/
 
 		QuadNode* subject = nullptr;
+
+		//underSubject stores the previous layer address
 		QuadNode* underSubject = nullptr;
 
 		//created at the root layer
-		
+
 		for (int i = randLayers(); i > 0; i--) {
-			if(!isRootLayer()){
+
+			/*
+			* each loop assumes that the iterator is already in place to link
+			* reminder: that means the iterator SHOULD be at the immediate
+			* predecesssor.
+			*/
+
+			if (!isRootLayer()) {
 				//if we arent on the root layer, we need to link below
+				//save the previous iteration
 				subject = underSubject;
 			}
-			subject = new QuadNode(nullptr, nullptr,
-				iterator, iterator->next, value, key);
 
-			subject->down = underSubject;
-			if (subject->down) {
-				subject->down->up = subject;
+			//create the node and make tenative hooks
+			subject = new QuadNode(nullptr, underSubject,
+				iterator, iterator->next, value, key);
+			if (underSubject) {
+				underSubject->up = subject;
 			}
 
+			//we can now splice the new node latterally
 			if (hasNext()) {
 				iterator->next->prev = subject;
 			}
 			iterator->prev->next = subject;
 
 
-			while (!hasUp() && hasPrev()) {
-				//if iterator doesn't direct up, go back until one does
-				itPrev();
-			}
-			
+			/*
+			* time to prep for the next iteration, we will jump up a layer now
+			* should it fail, we will make a final check to see if we are at
+			* the sentinel corner. then we will insert a new layer to that node
+			*/
+			if (!itJump()) {
+				if (iterator == sentinel) {
+					//so our new thing is higher
+					//generate a new QuadPtr, then move sentinel
+					sentinel->up = new QuadPtr(nullptr,
+						sentinel, nullptr, subject);
+					sentinel = sentinel->up;
+					layers++;
+				}
 
-			//Double check this implication
-			//What couldnt have and up NOR a previous? the sentinel
-			//this could allocate incorrectly (allocate extra sentinels not 
-			//needed FIX ME)
-
-			if (iterator == sentinel) {
-				//so our new thing is higher
-				//generate a new QuadPtr, then move sentinel
-				sentinel->up = new QuadPtr(nullptr,
-					sentinel, nullptr, subject);
-				sentinel = sentinel->up;
 			}
-			itUp();
 		}
+	}
 
+	void printList(std::ostream& out = cout) const {
+		//debugging print, prints entire list
+		out << "Printing List!\n\n":
 
+	
 
+		for (int i = 0; i < layer; i++) {	//start at top layer
+			resetIt(i);
+			out << "Layer " << layer - i << ": ";
+			while (itNext()) {
+				//if we can move forward, key is valid
+				cout << thisKey();
+			}
+			out << endl;
+		}
+		
 
 	}
 };
