@@ -16,38 +16,24 @@ using namespace std;
 template <typename KeyComparable, typename Value>
 class SkipList {
 private:
-	class QuadPtr {
+	class QuadNode {
 	public:
 
-		QuadPtr* up;
-		QuadPtr* prev;
-		QuadPtr* next; 
-		QuadPtr* down;
-
-
-		QuadPtr(QuadPtr* up = nullptr, QuadPtr* down = nullptr,
-			QuadPtr* prev = nullptr, QuadPtr* next = nullptr) : up(up),
-			next(next), prev(prev), down(down) {
-		}
-
-		virtual bool hasData() = 0;
-	};
-
-	class QuadNode : public QuadPtr {
-	public:
-
+		QuadNode* up;
+		QuadNode* prev;
+		QuadNode* next; 
+		QuadNode* down;
 		KeyComparable key;
 		Value value;
 
-		QuadNode(KeyComparable& key, Value& value) : QuadPtr(), key(key), value(value) {
+
+		QuadNode(QuadNode* up, QuadNode* down,
+			QuadNode* prev, QuadNode* next, 
+			KeyComparable& key, Value& value) : up(up),
+			next(next), prev(prev), down(down), key(key), value(value) 
+		{
 		}
 
-		QuadNode(
-			QuadPtr* up, QuadPtr* down,
-			QuadPtr* prev, QuadPtr* next,
-			KeyComparable& key, Value& value)
-			: QuadPtr(up, down, prev, next), key(key), value(value) {
-		}
 
 
 
@@ -56,7 +42,7 @@ private:
 
 	// we need to make sure that this is at the top corner
 	//the sentinel ptr will be at the top of the sentinel "column"
-	QuadPtr* sentinel;
+	QuadNode* sentinel;
 	int layers;
 
 	//internal iterator
@@ -90,6 +76,7 @@ private:
 	}
 
 
+
 	bool itUp() {
 		if (hasUp()) {
 			iterator = iterator->up;
@@ -118,6 +105,12 @@ private:
 		}
 		return false;
 	}
+
+
+	//now we have the special sauce (navigation) build them up from here
+	//abstraction!!
+
+
 	bool itJump() {
 		/*
 		* jumps to higher layer, goes up or goes back until it can
@@ -133,6 +126,35 @@ private:
 			return true;
 		}
 
+	}
+	/*
+	bool onSentinelColumn(bool noMove) {
+		//checks to see if iterator is on sentinel column
+		//bool is a dummy
+		//oh god this is so stupid im so sorry
+
+		if (false) { onSentinelColumn(); }
+		while (itUp()) {}
+		return iterator == sentinel;
+	}
+	bool onSentinelColumn() {
+		//checks to see if iterator is on sentinel column
+		QuadNode* temp = iterator;
+		while (temp->up) {
+			temp = temp->up;
+		}
+		return temp == sentinel;
+	}
+	*/
+	bool onSentinelColumn() {
+		//the sentinel is the ONLY element that has the following true
+		//sentinel->key == sentinel->next->key
+		//sentinel->prev == nullptr
+
+		if ((thisKey() == sentinel->key) && !hasPrev()) {
+			return true;
+		}
+		return false;
 	}
 
 
@@ -150,12 +172,12 @@ private:
 		* NOT empty. It would be reduntant to check below the sentinel as this
 		* special node should be level with the highest row.
 		*/
-		return sentinel->next == nullptr;
+		return sentinel == nullptr;
 	}
 
 
 	KeyComparable nextKey() {
-		return iterator.getKey();
+		return iterator->next->key;
 	}
 	KeyComparable thisKey() {
 		return iterator->key;
@@ -176,8 +198,6 @@ private:
 		* has a key
 		*
 		*/
-
-
 
 		while (hasNext() && key >= nextKey()) {//scan layer
 			itNext();
@@ -209,7 +229,8 @@ public:
 
 
 	SkipList() {
-		sentinel = new QuadPtr();
+		sentinel = nullptr;
+		iterator = sentinel;
 		layers = 0;
 	}
 
@@ -250,8 +271,8 @@ public:
 		//point our iterator to the sentinel, which is garunteed to be the
 		//upper right most node (which is nulled)
 		iterator = sentinel;
-		while ((iterator->down != nullptr) && (i > 0)) {
-			iterator = iterator->down;
+
+		while ((itDown()) && (i > 0)) {
 			i--;
 		}
 	}
@@ -317,8 +338,8 @@ public:
 				if (iterator == sentinel) {
 					//so our new thing is higher
 					//generate a new QuadPtr, then move sentinel
-					sentinel->up = new QuadPtr(nullptr,
-						sentinel, nullptr, subject);
+					sentinel->up = new QuadNode(nullptr,
+						sentinel, nullptr, subject, value, key);
 					sentinel = sentinel->up;
 					layers++;
 				}
