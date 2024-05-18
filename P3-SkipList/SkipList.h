@@ -60,20 +60,20 @@ private:
 	// Functions for checking the state of the iterator... Perhaps I should 
 	// make an iterator class at some point?
 
-	bool hasDown() {
-		return iterator->down != nullptr;
-	}
-	bool hasUp() {
-		return iterator->up != nullptr;
-	}
-	bool hasNext() {
-		return iterator->next != nullptr;
-	}
-	bool hasPrev() {
-		return iterator->prev != nullptr;
-	}
 	bool hasCurr() {
 		return iterator != nullptr;
+	}
+	bool hasDown() {
+		return hasCurr() && iterator->down != nullptr;
+	}
+	bool hasUp() {
+		return hasCurr() && iterator->up != nullptr;
+	}
+	bool hasNext() {
+		return hasCurr() && iterator->next != nullptr;
+	}
+	bool hasPrev() {
+		return hasCurr() && iterator->prev != nullptr;
 	}
 
 
@@ -190,23 +190,17 @@ private:
 		* internal find function.
 		*
 		* on true:
-		* there's a match; iterator points to node
+		* there's a match; iterator points node directly
 		*
 		* on false:
 		* no match; iterator points to node immedately less.
 		*
-		* WARNING: this ASSUMES next->key exists. please make sure the node
-		* has a key
 		*
 		*/
 
 		while (hasNext() && key >= nextKey()) {//scan layer
+			//this should bypass the duplicate set in sentinel
 			itNext();
-		}
-		//next node is going to be either a match or nullptr... to be safe ill
-
-		if (hasCurr() && key == thisKey()) {
-			return iterator;
 		}
 
 		/*
@@ -215,10 +209,19 @@ private:
 		* basically means the key is still technically less: still move down
 		*/
 
-		if (!isRootLayer()) {
-			itDown();
-			return findNode(key);
+		if (!itDown()) {
+			//we are at the root layer, we cant go further down
+			return iterator;
 		}
+
+		/*
+		* if we are here, we CAN go down, and we should now search starting at
+		* this layer!
+		*/
+
+		return findNode(key);
+
+	
 
 	}
 
@@ -278,6 +281,14 @@ public:
 		}
 	}
 
+	void bootstrap(Value& value, KeyComparable& key) {
+		//bootstrap an initial sentinel at first element inserted
+		//moves iterator to the fresh sentinel
+		if (!isEmpty()) { return; }
+		sentinel = new QuadNode(nullptr,nullptr,nullptr,nullptr,value,key);
+		iterator = sentinel;
+		layers++;
+	}
 
 	bool insert(Value& value, KeyComparable& key) {
 		if (find(key) == true) {
@@ -300,7 +311,12 @@ public:
 		//underSubject stores the previous layer address
 		QuadNode* underSubject = nullptr;
 
-		//created at the root layer
+
+		//we need to initialize the list if we are empty
+		//couldnt earlier because we had no values to work with
+		bootstrap(value, key);
+
+
 
 		for (int i = randLayers(); i > 0; i--) {
 
@@ -318,7 +334,9 @@ public:
 
 			//create the node and make tenative hooks
 			subject = new QuadNode(nullptr, underSubject,
-				iterator, iterator->next, value, key);
+				iterator, iterator->next,
+				value, key);
+
 			if (underSubject) {
 				underSubject->up = subject;
 			}
@@ -327,7 +345,7 @@ public:
 			if (hasNext()) {
 				iterator->next->prev = subject;
 			}
-			iterator->prev->next = subject;
+			iterator->next = subject;
 
 
 			/*

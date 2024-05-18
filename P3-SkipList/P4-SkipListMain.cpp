@@ -14,7 +14,7 @@ int main()
 
     for (int i = 0; i < 20; i++) {
         cout << "inserting " << i << ": " <<
-            list1.insert(i, i) ? "SUCESS" : "FAILURE";
+            list1.insert(i, i) ? "SUCCESS" : "FAILURE";
     }
 
     list1.printList();
