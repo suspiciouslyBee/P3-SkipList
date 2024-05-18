@@ -21,16 +21,25 @@ private:
 
 		QuadNode* up;
 		QuadNode* prev;
-		QuadNode* next; 
+		QuadNode* next;
 		QuadNode* down;
 		KeyComparable key;
 		Value value;
 
 
-		QuadNode(QuadNode* up, QuadNode* down,
-			QuadNode* prev, QuadNode* next, 
-			KeyComparable& key, Value& value) : up(up),
-			next(next), prev(prev), down(down), key(key), value(value) 
+		QuadNode(QuadNode* up,
+			QuadNode* down,
+			QuadNode* prev,
+			QuadNode* next,
+			KeyComparable& key,
+			Value& value)
+			:
+			up(up),
+			down(down),
+			prev(prev),
+			next(next),
+			key(key),
+			value(value)
 		{
 		}
 
@@ -59,7 +68,7 @@ private:
 
 	// Functions for checking the state of the iterator... Perhaps I should 
 	// make an iterator class at some point?
-
+	
 	bool hasCurr() {
 		return iterator != nullptr;
 	}
@@ -148,24 +157,33 @@ private:
 	}
 	*/
 	bool onSentinelColumn() {
-		//the sentinel is the ONLY element that has the following true
-		//sentinel->key == sentinel->next->key
-		//sentinel->prev == nullptr
+		/*
+		* the sentinel is the ONLY element that has the following true:
+		* sentinel->key == sentinel->next->key (when updated)
+		* sentinel->prev == nullptr
+		* We can use this to help know where we are in the list
+		*/
 
-		if ((thisKey() == sentinel->key) && !hasPrev()) {
-			return true;
-		}
-		return false;
+		return !hasPrev();
+	}
+
+	void updateIt(KeyComparable& key, Value& value) {
+		/*
+		* helper function to manually edit a selected node
+		* 
+		* CAUTION: WILL OVERWRITE NO MATTTER WHAT AND MAY BREAK SORTED ORDER
+		* 
+		* used for updating the sentinel row (inserting something immediately
+		* after). This is a dedicated function as it should be extremely clear
+		* that this is being done.
+		*/
+
+		iterator->key = key;
+		iterator->value = key;
+		return;
 	}
 
 
-
-	bool isRootLayer() {
-		if (!hasDown() && ((hasUp() || (layers == 1)))) {
-			return true;
-		}
-		return false;
-	}
 	bool isEmpty() {
 
 		/*
@@ -221,7 +239,7 @@ private:
 
 		return findNode(key);
 
-	
+
 
 	}
 
@@ -285,7 +303,7 @@ public:
 		//bootstrap an initial sentinel at first element inserted
 		//moves iterator to the fresh sentinel
 		if (!isEmpty()) { return; }
-		sentinel = new QuadNode(nullptr,nullptr,nullptr,nullptr,value,key);
+		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
 		iterator = sentinel;
 		layers++;
 	}
@@ -319,23 +337,30 @@ public:
 
 
 		for (int i = randLayers(); i > 0; i--) {
-
+			cout << "\nlayers remaining : " << i << endl;
+			cout << "\nStarting Insert: \n";
+			printList();
 			/*
 			* each loop assumes that the iterator is already in place to link
 			* reminder: that means the iterator SHOULD be at the immediate
 			* predecesssor.
 			*/
 
-			if (!isRootLayer()) {
+			if (hasDown()) {
 				//if we arent on the root layer, we need to link below
 				//save the previous iteration
 				subject = underSubject;
 			}
 
 			//create the node and make tenative hooks
-			subject = new QuadNode(nullptr, underSubject,
-				iterator, iterator->next,
-				value, key);
+			subject = new QuadNode(
+
+				nullptr,
+				underSubject,
+				iterator,
+				iterator->next,
+
+				key, value);
 
 			if (underSubject) {
 				underSubject->up = subject;
@@ -347,32 +372,52 @@ public:
 			}
 			iterator->next = subject;
 
+			//Are we inserting right in front of the sentinel?
+			//Then we need to update
+			if (onSentinelColumn()) {
+				updateIt(key, value);
+			}
+
 
 			/*
 			* time to prep for the next iteration, we will jump up a layer now
 			* should it fail, we will make a final check to see if we are at
 			* the sentinel corner. then we will insert a new layer to that node
+			* 
+			* do for every layer except for last layer soo
 			*/
-			if (!itJump()) {
+			if (!itJump() && (i > 1)) {
 				if (iterator == sentinel) {
 					//so our new thing is higher
 					//generate a new QuadPtr, then move sentinel
-					sentinel->up = new QuadNode(nullptr,
-						sentinel, nullptr, subject, value, key);
+
+					sentinel->up = new QuadNode(
+
+						nullptr,
+						sentinel,
+						nullptr,
+						subject,
+
+						key, value);
+
 					sentinel = sentinel->up;
 					layers++;
 				}
-
 			}
+			//cout << "\nEnding Insert: \n";
+			//printList();
 		}
+		cout << endl;
+		printList();
+		return true;
 	}
 
 	void printList(std::ostream& out = cout) {
 		//debugging print, prints entire list
 		out << "Printing List!\n\n";
 
-	
 
+		/*
 		for (int i = 0; i < layers; i++) {	//start at top layer
 			resetIt(i);
 			out << "Layer " << layers - i << ": ";
@@ -381,8 +426,39 @@ public:
 				cout << thisKey() << " ";
 			}
 			out << endl;
-		}
-		
+		}*/
 
+		//hands on print, function bypass
+		QuadNode* restore = iterator;
+		QuadNode* temp = sentinel;
+		iterator = sentinel;
+
+
+
+		while (iterator) {
+			temp = iterator->down; //store immediate down
+			if (iterator->down == nullptr) {
+				cout << "Root ";
+			}
+			else {
+				cout << "High ";
+			}
+			while (iterator) {
+				if (iterator->prev == nullptr) {
+					cout << "Sentinel: " << thisKey() << " || ";
+				}
+				else {
+					cout << thisKey() << " ";
+
+				}
+				iterator = iterator->next;
+			}
+
+
+			iterator = temp; //decend immediate down
+			cout << endl;
+		}
+		cout << "\nFinished Print\n";
+		iterator = restore;
 	}
 };
