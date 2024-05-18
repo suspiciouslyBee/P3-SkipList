@@ -346,11 +346,11 @@ public:
 			* predecesssor.
 			*/
 
-			if (hasDown()) {
+
 				//if we arent on the root layer, we need to link below
 				//save the previous iteration
-				subject = underSubject;
-			}
+				underSubject = subject;
+			
 
 			//create the node and make tenative hooks
 			subject = new QuadNode(
@@ -401,6 +401,7 @@ public:
 						key, value);
 
 					sentinel = sentinel->up;
+					iterator = sentinel;
 					layers++;
 				}
 			}
