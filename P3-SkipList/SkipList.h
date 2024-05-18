@@ -378,7 +378,7 @@ public:
 			out << "Layer " << layers - i << ": ";
 			while (itNext()) {
 				//if we can move forward, key is valid
-				cout << thisKey();
+				cout << thisKey() << " ";
 			}
 			out << endl;
 		}
