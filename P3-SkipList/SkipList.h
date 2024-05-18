@@ -54,6 +54,7 @@ private:
 		while (rand() & 1) {
 			i++;
 		}
+		return i;
 	}
 
 	// Functions for checking the state of the iterator... Perhaps I should 
