@@ -244,6 +244,78 @@ private:
 	}
 
 
+	QuadNode* createColumn(const KeyComparable& key, const Value& value,
+		int height) {
+
+		/*
+		* Internal helper to create a stack of some integer high, returns the 
+		* base of the node column.
+		* 
+		* note: previous will be *above* subject for this iterator. create from
+		* top -> down.
+		* 
+		*/
+
+		if (height > this->layers) {
+			this->layers = height;
+		}
+
+		QuadNode* previous = nullptr;
+
+		QuadNode* subject = new QuadNode(nullptr, nullptr, nullptr, nullptr,
+			key, value);
+
+
+
+		for (; height > 1; height--) {
+			previous = subject;
+			subject = new QuadNode(previous, nullptr, nullptr, nullptr,
+				key, value);
+			previous->down = subject;
+		}
+		return subject;
+	}
+
+
+	bool linkColumn(QuadNode* base) {
+		/*
+		* Links Column to just after iterator
+		*/
+		if (base == nullptr) { return false; }
+
+		while (base->up) {
+
+			//link base
+			base->next = iterator->next;
+			base->prev = iterator;
+
+			//link next back
+			if (hasNext()) {
+				iterator->next->prev = base;
+			}
+			iterator->next = base;
+
+			if (onSentinelColumn()) {
+				updateIt(base->key, base->value);
+			}
+
+			if (!itJump()) {
+				/*
+				* if we cant jump, the iterator is algorithmically already at
+				* sentinel column. we need to make the sentinel just a bit
+				* higher
+				* 
+				* for clarity, we will make this directly at the sentinel
+				*/
+
+				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
+					nullptr, base->key, base->value);
+				sentinel = sentinel->up;
+			}
+		}
+
+
+	}
 
 
 
@@ -324,89 +396,14 @@ public:
 		* Notice: Function allocates dynamic memory!
 		*/
 
-		QuadNode* subject = nullptr;
-
-		//underSubject stores the previous layer address
-		QuadNode* underSubject = nullptr;
 
 
 		//we need to initialize the list if we are empty
 		//couldnt earlier because we had no values to work with
 		bootstrap(value, key);
-
-
-
-		for (int i = randLayers(); i > 0; i--) {
-			cout << "\nlayers remaining : " << i << endl;
-			cout << "\nStarting Insert: \n";
-			printList();
-			/*
-			* each loop assumes that the iterator is already in place to link
-			* reminder: that means the iterator SHOULD be at the immediate
-			* predecesssor.
-			*/
-
-
-				//if we arent on the root layer, we need to link below
-				//save the previous iteration
-				underSubject = subject;
-			
-
-			//create the node and make tenative hooks
-			subject = new QuadNode(
-
-				nullptr,
-				underSubject,
-				iterator,
-				iterator->next,
-
-				key, value);
-
-			if (underSubject) {
-				underSubject->up = subject;
-			}
-
-			//we can now splice the new node latterally
-			if (hasNext()) {
-				iterator->next->prev = subject;
-			}
-			iterator->next = subject;
-
-			//Are we inserting right in front of the sentinel?
-			//Then we need to update
-			if (onSentinelColumn()) {
-				updateIt(key, value);
-			}
-
-
-			/*
-			* time to prep for the next iteration, we will jump up a layer now
-			* should it fail, we will make a final check to see if we are at
-			* the sentinel corner. then we will insert a new layer to that node
-			* 
-			* do for every layer except for last layer soo
-			*/
-			if (!itJump() && (i > 1)) {
-				if (iterator == sentinel) {
-					//so our new thing is higher
-					//generate a new QuadPtr, then move sentinel
-
-					sentinel->up = new QuadNode(
-
-						nullptr,
-						sentinel,
-						nullptr,
-						subject,
-
-						key, value);
-
-					sentinel = sentinel->up;
-					iterator = sentinel;
-					layers++;
-				}
-			}
-			//cout << "\nEnding Insert: \n";
-			//printList();
+		printList();
+		if (!linkColumn(createColumn(key, value), randLayers())) {
+			return false;
 		}
 		cout << endl;
 		printList();
