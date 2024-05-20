@@ -29,13 +29,13 @@ int main()
 	cout << "clearing list\n";
 	list1.clearList();
 	list1.displayList();
-
+	/*
 	cout << "reinserting integers\n";
 	for (int i = 0; i < 20; i++) {
 		list1.insert(i, i);
 	}
 	list1.displayList();
-
+	*/
 
 	cout << "==============================\n\n";
 

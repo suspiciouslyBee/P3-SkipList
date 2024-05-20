@@ -299,6 +299,7 @@ private:
 	}
 
 
+
 	QuadNode* findNode(const KeyComparable& key) {
 		/*
 		* internal find function.
@@ -507,12 +508,25 @@ public:
 
 	}
 
+	void updateSentinels() {
+		//make sure sentinels match the first accessable value
+		resetIt();
+		while (hasCurr()) {
+			if (thisKey() != nextKey()) {
+				updateIt(iterator->next->key, iterator->next->value);
+			}
+			if (!itDown()) { break; }
+		}
+
+	}
+
 	bool remove(const KeyComparable& key) {
 		if (!find(key)) { return false; }
 
 		deleteColumn(iterator);
 
 		shrinkList();
+		updateSentinels();
 	}
 
 	bool find(const KeyComparable& key) {
