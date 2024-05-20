@@ -3,9 +3,7 @@
 #include <iostream>
 #include <random>
 #include "SkipList.h"
-#include<windows.h>
-#include<stdio.h>   
-#include<tchar.h>
+
 
 using namespace std;
 
