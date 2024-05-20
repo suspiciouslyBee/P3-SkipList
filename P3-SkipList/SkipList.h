@@ -425,12 +425,18 @@ private:
 		return true;
 	}
 	void printList(std::ostream& out = cout) {
-		//debugging print, prints entire list
+		/*
+		* This is the worst print function ever... but it works
+		* Baically... while iterator has something, we check if its the base 
+		* layer
+		*/
 		out << "Printing List!\n\n";
 		QuadNode* restore = iterator;
 		QuadNode* temp = sentinel;
 		resetIt();
 
+
+		int i = layers;
 
 		if (isEmpty()) {
 			out << "Empty List!\n";
@@ -439,18 +445,15 @@ private:
 
 
 
-
 		while (hasCurr()) {
 			temp = iterator->down; //store immediate down
+			out << "Layer #" << i << ": ";
 			if (hasDown()) {
-				cout << "Root ";
-			}
-			else {
-				cout << "High ";
+				i--;
 			}
 			while (hasCurr()) {
 				if (!hasPrev()) {
-					cout << "Sentinel: " << setw(3) << thisKey() << " ||";
+					cout << setw(3) << thisKey() << " ||";
 				}
 				else {
 					cout << setw(3) << thisKey();
@@ -500,7 +503,7 @@ public:
 		layers = 0;
 
 		sentinel = iterator = nullptr;
-		srand(time(nullptr));
+		srand(time(nullptr) * rand());
 
 	}
 
@@ -550,7 +553,7 @@ public:
 		//upper right most node (which is nulled)
 		iterator = sentinel;
 
-		while ((itDown()) && (i > 0)) {
+		while ((i > 0) && (itDown())) {
 			i--;
 		}
 	}
@@ -562,7 +565,7 @@ public:
 		//debug_check();
 		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
 		iterator = sentinel;
-		layers++;
+		layers = 1;
 	}
 
 	bool insert(Value& value, KeyComparable& key) {
