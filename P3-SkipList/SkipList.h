@@ -9,6 +9,7 @@
 * this also contains an internal Quad Node
 */
 
+constexpr auto MAX_NODES = 200000;
 #include <random>
 
 using namespace std;
@@ -25,6 +26,7 @@ private:
 		QuadNode* down;
 		KeyComparable key;
 		Value value;
+
 
 
 		QuadNode(QuadNode* up,
@@ -53,11 +55,19 @@ private:
 	//the sentinel ptr will be at the top of the sentinel "column"
 	QuadNode* sentinel;
 	int layers;
+	int created;
 
 	//internal iterator
 	//TODO: port this to be compatible with STL
 	mutable QuadNode* iterator;
+	
+	void debug_check() {
+		//this debug lets me prevent the computer from locking up
+		if (created > MAX_NODES) {
+			exit(-2);
+		}
 
+	}
 	int randLayers() { //helper to find number of additional layers
 		int i = 1;
 		while (rand() & 1) {
@@ -244,7 +254,7 @@ private:
 	}
 
 
-	QuadNode* createColumn(const KeyComparable& key, const Value& value,
+	QuadNode* createColumn(KeyComparable& key, Value& value,
 		int height) {
 
 		/*
@@ -262,13 +272,22 @@ private:
 
 		QuadNode* previous = nullptr;
 
-		QuadNode* subject = new QuadNode(nullptr, nullptr, nullptr, nullptr,
+		QuadNode* subject = new QuadNode(
+			nullptr, 
+			nullptr, 
+			nullptr, 
+			nullptr,
+
 			key, value);
 
 
 
 		for (; height > 1; height--) {
 			previous = subject;
+
+
+			debug_check();
+
 			subject = new QuadNode(previous, nullptr, nullptr, nullptr,
 				key, value);
 			previous->down = subject;
@@ -283,8 +302,9 @@ private:
 		*/
 		if (base == nullptr) { return false; }
 
-		while (base->up) {
+		while (base != nullptr) {
 
+			
 			//link base
 			base->next = iterator->next;
 			base->prev = iterator;
@@ -299,7 +319,7 @@ private:
 				updateIt(base->key, base->value);
 			}
 
-			if (!itJump()) {
+			if (!itJump() && base->up) {
 				/*
 				* if we cant jump, the iterator is algorithmically already at
 				* sentinel column. we need to make the sentinel just a bit
@@ -307,14 +327,16 @@ private:
 				* 
 				* for clarity, we will make this directly at the sentinel
 				*/
-
-				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
+				debug_check();
+ 				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
 					nullptr, base->key, base->value);
 				sentinel = sentinel->up;
+				itUp();
 			}
+			base = base->up;
 		}
 
-
+		return true;
 	}
 
 
@@ -326,6 +348,7 @@ public:
 		sentinel = nullptr;
 		iterator = sentinel;
 		layers = 0;
+		created = 0; // debug to prevent run away memory creation
 	}
 
 	bool find(const KeyComparable& key) {
@@ -375,6 +398,7 @@ public:
 		//bootstrap an initial sentinel at first element inserted
 		//moves iterator to the fresh sentinel
 		if (!isEmpty()) { return; }
+		debug_check();
 		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
 		iterator = sentinel;
 		layers++;
@@ -402,7 +426,7 @@ public:
 		//couldnt earlier because we had no values to work with
 		bootstrap(value, key);
 		printList();
-		if (!linkColumn(createColumn(key, value), randLayers())) {
+		if (!linkColumn(createColumn(key, value, randLayers()))) {
 			return false;
 		}
 		cout << endl;
@@ -426,7 +450,7 @@ public:
 			out << endl;
 		}*/
 
-		//hands on print, function bypass
+		//hands on print, function bypass because lol
 		QuadNode* restore = iterator;
 		QuadNode* temp = sentinel;
 		iterator = sentinel;
