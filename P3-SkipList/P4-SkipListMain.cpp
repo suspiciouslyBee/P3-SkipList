@@ -2,41 +2,55 @@
 
 #include <iostream>
 #include <random>
+#include "SkipList.h"
+
 
 using namespace std;
 
 
 int main()
 {
-    int heads = 0;
-    int tails = 0;
-    int adding = 0;
-    int tries = 0;
-    int i = 0;
 
-    cout << "Hello World!\n";
-    while (true) {
-        cout << "Enter # of tries:\n";
-        cin >> tries;
-        cout << "This should be a good distribution\n";
+	cout << "creating integer skip list\n";
+	SkipList<int, int> list1;
 
-        for (i = 0; i <= tries; i++) {
-            if ((rand() & 7)) {
-                heads++;
-            }
-            else {
-                tails++;
-            }
-        }
+	for (int i = 0; i < 20; i++) {
+		list1.insert(i, i);
+	}
+	list1.displayList();
 
-        cout << "Heads: " << heads << endl;
-        cout << "Tails: " << tails << endl;
-        heads = 0;
-        tails = 0;
-    }
+	cout << "deleting evens\n";
 
-    
+	for (int i = 0; i < 20; i += 2) {
+		list1.remove(i);
+	}
+	list1.displayList();
+
+	cout << "clearing list\n";
+	list1.clearList();
+	list1.displayList();
+	
+	cout << "reinserting integers\n";
+	for (int i = 0; i < 20; i++) {
+		list1.insert(i, i);
+	}
+	list1.displayList();
+	
+	cout << "\nTesting Find\n";
+
+	for (int i = 0; i < 40; i += 6) {
+		cout << "finding " << i << endl;
+		if (list1.find(i)) {
+			cout << "FOUND: " << list1.thisValue();
+		}
+		else {
+			cout << "Not Found";
+		}
+		cout << endl << endl;
+	}
+
+	cout << "==============================\n\n";
 
 
-
+	return 0;
 }
