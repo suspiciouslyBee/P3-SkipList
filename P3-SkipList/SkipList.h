@@ -12,6 +12,8 @@
 constexpr auto MAX_NODES = 200000;
 #include <random>
 #include <iomanip>
+#include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -375,6 +377,7 @@ public:
 		iterator = sentinel;
 		layers = 0;
 		created = 0; // debug to prevent run away memory creation
+		srand(time(nullptr));
 	}
 
 	bool find(const KeyComparable& key) {
@@ -451,14 +454,14 @@ public:
 		//we need to initialize the list if we are empty
 		//couldnt earlier because we had no values to work with
 		bootstrap(value, key);
-		printList();
+		//printList();
 		int rando = randLayers();
-		cout << endl << key << " gen'd a " << rando << endl;
+		//cout << endl << key << " gen'd a " << rando << endl;
 		if (!linkColumn(createColumn(key, value, rando))) {
 			return false;
 		}
-		cout << endl;
-		printList();
+		//cout << endl;
+		//printList();
 		return true;
 	}
 
@@ -483,7 +486,7 @@ public:
 		QuadNode* temp = sentinel;
 		iterator = sentinel;
 
-
+		
 
 
 
@@ -498,7 +501,7 @@ public:
 			}
 			while (iterator) {
 				if (iterator->prev == nullptr) {
-					cout << "Sentinel: " << thisKey() << " ||";
+					cout << "Sentinel: " << setw(3) << thisKey() << " ||";
 				}
 				else {
 					cout << setw(3) << thisKey();

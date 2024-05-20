@@ -15,14 +15,17 @@ int main()
 
 
 
-    cout << "creating integer list\n";
-    SkipList<int, int> list1;
+	cout << "creating integer skip list\nenter max index: ";
+	SkipList<int, int> list1;
+		int max = 0;
+	while (true) {
+		cin >> max;
+		for (int i = 0; i < max; i++) {
+			list1.insert(i, i);
+		}
+	list1.printList();
 
-    for (int i = 0; i < 50; i++) {
-        cout << "inserting " << i << ": " <<
-            (list1.insert(i, i) ? "SUCCESS" : "FAILURE") << endl;
-    }
+	}
 
-    list1.printList();
-    return 0;
+	return 0;
 }
