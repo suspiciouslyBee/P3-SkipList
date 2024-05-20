@@ -232,25 +232,7 @@ private:
 		return true;
 
 	}
-	/*
-	bool onSentinelColumn(bool noMove) {
-		//checks to see if iterator is on sentinel column
-		//bool is a dummy
-		//oh god this is so stupid im so sorry
 
-		if (false) { onSentinelColumn(); }
-		while (itUp()) {}
-		return iterator == sentinel;
-	}
-	bool onSentinelColumn() {
-		//checks to see if iterator is on sentinel column
-		QuadNode* temp = iterator;
-		while (temp->up) {
-			temp = temp->up;
-		}
-		return temp == sentinel;
-	}
-	*/
 	bool onSentinelColumn() {
 		/*
 		* the sentinel is the ONLY element that has the following true:
@@ -431,7 +413,8 @@ private:
 		* Baically... while iterator has something, we check if its the base 
 		* layer
 		*/
-		out << "Printing List!\n\n";
+		out << "\n================\n";
+		out << "Printing Skip List by Keys!!\n\n";
 		QuadNode* restore = iterator;
 		QuadNode* temp = sentinel;
 		resetIt();
@@ -454,22 +437,25 @@ private:
 			}
 			while (hasCurr()) {
 				if (!hasPrev()) {
-					cout << setw(3) << thisKey() << " ||";
+					out << setw(3) << thisKey() << " ||";
 				}
 				else {
-					cout << setw(3) << thisKey();
+					out << setw(3) << thisKey();
 				}
 				for (int i = directSucessor(); i > 0; i--) {
-					cout << setw(3) << " ";
+					out << setw(3) << " ";
 				}
 				iterator = iterator->next;
 			}
 
 
 			iterator = temp; //decend immediate down
-			cout << endl;
+			out << endl;
 		}
-		cout << "\nFinished Print\n";
+		
+		out << "Sentinels             The Actual List\n";
+
+		out << "\nFinished Print!\n";
 		iterator = restore;
 	}
 
