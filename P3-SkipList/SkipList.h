@@ -11,6 +11,7 @@
 
 constexpr auto MAX_NODES = 200000;
 #include <random>
+#include <iomanip>
 
 using namespace std;
 
@@ -60,7 +61,7 @@ private:
 	//internal iterator
 	//TODO: port this to be compatible with STL
 	mutable QuadNode* iterator;
-	
+
 	void debug_check() {
 		//this debug lets me prevent the computer from locking up
 		if (created > MAX_NODES) {
@@ -78,7 +79,7 @@ private:
 
 	// Functions for checking the state of the iterator... Perhaps I should 
 	// make an iterator class at some point?
-	
+
 	bool hasCurr() {
 		return iterator != nullptr;
 	}
@@ -95,6 +96,31 @@ private:
 		return hasCurr() && iterator->prev != nullptr;
 	}
 
+
+	int directSucessor() {
+		/*
+		* figures out how many spaces seperate a node from its sucessor
+		* start with iterator, go to base,
+		*
+		* we move first forward if they dont directly connect, count it
+		*/
+		if (iterator->next == nullptr) { return 0; }
+		QuadNode* first = iterator;
+		QuadNode* second = iterator->next;
+		int degrees = 0;
+
+		while (first->down != nullptr && second->down != nullptr) {
+			first = first->down;
+			second = second->down;
+		}
+		while (first->next != second) {
+			first = first->next;
+			degrees++;
+		}
+
+		return degrees;
+
+	}
 
 
 	bool itUp() {
@@ -143,8 +169,8 @@ private:
 			if (!itPrev()) {
 				return false;
 			}
-			return true;
 		}
+		return true;
 
 	}
 	/*
@@ -180,9 +206,9 @@ private:
 	void updateIt(KeyComparable& key, Value& value) {
 		/*
 		* helper function to manually edit a selected node
-		* 
+		*
 		* CAUTION: WILL OVERWRITE NO MATTTER WHAT AND MAY BREAK SORTED ORDER
-		* 
+		*
 		* used for updating the sentinel row (inserting something immediately
 		* after). This is a dedicated function as it should be extremely clear
 		* that this is being done.
@@ -258,12 +284,12 @@ private:
 		int height) {
 
 		/*
-		* Internal helper to create a stack of some integer high, returns the 
+		* Internal helper to create a stack of some integer high, returns the
 		* base of the node column.
-		* 
+		*
 		* note: previous will be *above* subject for this iterator. create from
 		* top -> down.
-		* 
+		*
 		*/
 
 		if (height > this->layers) {
@@ -273,9 +299,9 @@ private:
 		QuadNode* previous = nullptr;
 
 		QuadNode* subject = new QuadNode(
-			nullptr, 
-			nullptr, 
-			nullptr, 
+			nullptr,
+			nullptr,
+			nullptr,
 			nullptr,
 
 			key, value);
@@ -304,7 +330,7 @@ private:
 
 		while (base != nullptr) {
 
-			
+
 			//link base
 			base->next = iterator->next;
 			base->prev = iterator;
@@ -324,11 +350,11 @@ private:
 				* if we cant jump, the iterator is algorithmically already at
 				* sentinel column. we need to make the sentinel just a bit
 				* higher
-				* 
+				*
 				* for clarity, we will make this directly at the sentinel
 				*/
 				debug_check();
- 				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
+				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
 					nullptr, base->key, base->value);
 				sentinel = sentinel->up;
 				itUp();
@@ -426,7 +452,9 @@ public:
 		//couldnt earlier because we had no values to work with
 		bootstrap(value, key);
 		printList();
-		if (!linkColumn(createColumn(key, value, randLayers()))) {
+		int rando = randLayers();
+		cout << endl << key << " gen'd a " << rando << endl;
+		if (!linkColumn(createColumn(key, value, rando))) {
 			return false;
 		}
 		cout << endl;
@@ -457,6 +485,9 @@ public:
 
 
 
+
+
+
 		while (iterator) {
 			temp = iterator->down; //store immediate down
 			if (iterator->down == nullptr) {
@@ -467,11 +498,13 @@ public:
 			}
 			while (iterator) {
 				if (iterator->prev == nullptr) {
-					cout << "Sentinel: " << thisKey() << " || ";
+					cout << "Sentinel: " << thisKey() << " ||";
 				}
 				else {
-					cout << thisKey() << " ";
-
+					cout << setw(3) << thisKey();
+				}
+				for (int i = directSucessor(); i > 0; i--) {
+					cout << setw(3) << " ";
 				}
 				iterator = iterator->next;
 			}

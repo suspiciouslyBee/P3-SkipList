@@ -18,7 +18,7 @@ int main()
     cout << "creating integer list\n";
     SkipList<int, int> list1;
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 50; i++) {
         cout << "inserting " << i << ": " <<
             (list1.insert(i, i) ? "SUCCESS" : "FAILURE") << endl;
     }
