@@ -180,23 +180,7 @@ private:
 		}
 	}
 
-	void clearList() {
-		//annihilate list. go to end. work back
-		//used for destruction, does not take care of shrinking, just resets
 
-		resetIt();
-		while (hasCurr()) {
-			iterator = deleteColumn(iterator);
-		}
-
-		
-
-		layers = 0;
-
-		sentinel = iterator = nullptr;
-		srand(time(nullptr));
-
-	}
 
 	bool itUp() {
 		if (hasUp()) {
@@ -440,7 +424,50 @@ private:
 
 		return true;
 	}
+	void printList(std::ostream& out = cout) {
+		//debugging print, prints entire list
+		out << "Printing List!\n\n";
+		QuadNode* restore = iterator;
+		QuadNode* temp = sentinel;
+		resetIt();
 
+
+		if (isEmpty()) {
+			out << "Empty List!\n";
+			return;
+		}
+
+
+
+
+		while (hasCurr()) {
+			temp = iterator->down; //store immediate down
+			if (hasDown()) {
+				cout << "Root ";
+			}
+			else {
+				cout << "High ";
+			}
+			while (hasCurr()) {
+				if (!hasPrev()) {
+					cout << "Sentinel: " << setw(3) << thisKey() << " ||";
+				}
+				else {
+					cout << setw(3) << thisKey();
+				}
+				for (int i = directSucessor(); i > 0; i--) {
+					cout << setw(3) << " ";
+				}
+				iterator = iterator->next;
+			}
+
+
+			iterator = temp; //decend immediate down
+			cout << endl;
+		}
+		cout << "\nFinished Print\n";
+		iterator = restore;
+	}
 
 
 public:
@@ -456,10 +483,25 @@ public:
 
 	~SkipList() {
 		clearList();
-		printList();
 	}
 	SkipList(const SkipList& rhs) {
 		if (this == *rhs) { return  *this; }
+	}
+
+	void clearList() {
+		//annihilate list. go to end. work back
+		//used for destruction, does not take care of shrinking, just resets
+
+		resetIt();
+		while (hasCurr()) {
+			iterator = deleteColumn(iterator);
+		}
+
+		layers = 0;
+
+		sentinel = iterator = nullptr;
+		srand(time(nullptr));
+
 	}
 
 	bool remove(const KeyComparable& key) {
@@ -555,58 +597,8 @@ public:
 		return true;
 	}
 
-	void printList(std::ostream& out = cout) {
-		//debugging print, prints entire list
-		out << "Printing List!\n\n";
-
-
-		/*
-		for (int i = 0; i < layers; i++) {	//start at top layer
-			resetIt(i);
-			out << "Layer " << layers - i << ": ";
-			while (itNext()) {
-				//if we can move forward, key is valid
-				cout << thisKey() << " ";
-			}
-			out << endl;
-		}*/
-
-		//hands on print, function bypass because lol
-		QuadNode* restore = iterator;
-		QuadNode* temp = sentinel;
-		iterator = sentinel;
-
-
-
-
-
-
-		while (iterator) {
-			temp = iterator->down; //store immediate down
-			if (iterator->down == nullptr) {
-				cout << "Root ";
-			}
-			else {
-				cout << "High ";
-			}
-			while (iterator) {
-				if (iterator->prev == nullptr) {
-					cout << "Sentinel: " << setw(3) << thisKey() << " ||";
-				}
-				else {
-					cout << setw(3) << thisKey();
-				}
-				for (int i = directSucessor(); i > 0; i--) {
-					cout << setw(3) << " ";
-				}
-				iterator = iterator->next;
-			}
-
-
-			iterator = temp; //decend immediate down
-			cout << endl;
-		}
-		cout << "\nFinished Print\n";
-		iterator = restore;
+	void displayList(std::ostream& out = cout) {
+		printList(out);
 	}
+
 };
