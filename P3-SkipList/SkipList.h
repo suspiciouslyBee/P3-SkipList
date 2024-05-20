@@ -145,9 +145,8 @@ private:
 
 		while (subject->down != nullptr) {
 			subject = subject->down;
-			returnAddress = subject->next;
 		}
-
+		returnAddress = subject->next;
 		//remove and sew up hole
 		//if the value is on sentinel row, we need to redefine with next
 
@@ -190,7 +189,7 @@ private:
 			iterator = deleteColumn(iterator);
 		}
 
-		deleteColumn(sentinel);
+		
 
 		layers = 0;
 
@@ -457,6 +456,10 @@ public:
 
 	~SkipList() {
 		clearList();
+		printList();
+	}
+	SkipList(const SkipList& rhs) {
+		if (this == *rhs) { return  *this; }
 	}
 
 	bool remove(const KeyComparable& key) {
