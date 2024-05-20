@@ -273,12 +273,7 @@ private:
 	}
 
 
-	KeyComparable nextKey() {
-		return iterator->next->key;
-	}
-	KeyComparable thisKey() {
-		return iterator->key;
-	}
+
 
 
 
@@ -477,7 +472,16 @@ public:
 	SkipList(const SkipList& rhs) {
 		if (this == *rhs) { return  *this; }
 	}
+	KeyComparable nextKey() {
+		return iterator->next->key;
+	}
+	KeyComparable thisKey() {
+		return iterator->key;
+	}
 
+	Value thisValue() {
+		return iterator->value;
+	}
 	void clearList() {
 		//annihilate list. go to end. work back
 		//used for destruction, does not take care of shrinking, just resets
@@ -517,7 +521,7 @@ public:
 
 	bool find(const KeyComparable& key) {
 		/*
-		* internal find function.
+		* find
 		*
 		* on true:
 		* there's a match; iterator points to node

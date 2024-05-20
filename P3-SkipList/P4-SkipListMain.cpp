@@ -36,6 +36,18 @@ int main()
 	}
 	list1.displayList();
 	
+	cout << "\nTesting Find\n";
+
+	for (int i = 0; i < 40; i += 6) {
+		cout << "finding " << i << endl;
+		if (list1.find(i)) {
+			cout << "FOUND: " << list1.thisValue();
+		}
+		else {
+			cout << "Not Found";
+		}
+		cout << endl << endl;
+	}
 
 	cout << "==============================\n\n";
 
