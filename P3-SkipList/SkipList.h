@@ -457,7 +457,6 @@ private:
 
 public:
 
-
 	SkipList() {
 		sentinel = nullptr;
 		iterator = sentinel;
@@ -470,8 +469,47 @@ public:
 		clearList();
 	}
 	SkipList(const SkipList& rhs) {
-		if (this == *rhs) { return  *this; }
+		//deep copy
+		this->iterator = nullptr;
+		this->layers = rhs.layers;
+		rhs.resetIt(rhs.layers); // go to bottom
+
+		//clone sentinel column
+
+		while (rhs->hasCurr) {
+			this->sentinel = new QuadNode(nullptr, this->iterator,
+				nullptr, nullptr,
+				rhs.thisKey(), rhs.thisValue());
+			if (hasCurr()) {
+				iterator->up = this->sentinel;
+			}
+			this->iterator = this->sentinel;
+			if (!rhs->itUp()) { break; }
+		}
+
+		rhs.resetIt(rhs.layers);
+
+		while (rhs.hasNext()) {
+			rhs.itNext();
+			linkColumn(createColumn(rhs->thisKey, rhs->thisValue, 
+				rhs.height(rhs.getIterator)));
+		}
 	}
+
+
+	int height(QuadNode* root) {
+		if (root == nullptr) { return 0; }
+		int height = 1;
+		while (root->up != nullptr) {
+			root = root->up;
+			height++;
+		}
+	}
+
+	QuadNode* getIterator() {
+		return this->iterator;
+	}
+
 	KeyComparable nextKey() {
 		return iterator->next->key;
 	}
