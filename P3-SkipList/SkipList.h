@@ -6,7 +6,8 @@
 * Programmer: June
 *
 * Description: Header file for the program's node. Due to templatizing bullcrap
-* this also contains an internal Quad Node
+* this also contains an internal Quad Node. There's a bunch of srand() to 
+* make sure the seed is different whenever possible
 */
 
 constexpr auto MAX_NODES = 200000;
@@ -58,19 +59,19 @@ private:
 	//the sentinel ptr will be at the top of the sentinel "column"
 	QuadNode* sentinel;
 	int layers;
-	int created;
+	//int created;
 
 	//internal iterator
 	//TODO: port this to be compatible with STL
 	mutable QuadNode* iterator;
-
+	/*
 	void debug_check() {
 		//this debug lets me prevent the computer from locking up
 		if (created > MAX_NODES) {
 			exit(-2);
 		}
 
-	}
+	}*/
 	int randLayers() { //helper to find number of additional layers
 		int i = 1;
 		while (rand() & 1) {
@@ -105,8 +106,13 @@ private:
 		* start with iterator, go to base,
 		*
 		* we move first forward if they dont directly connect, count it
+		* 
+		* this is primarally used for generating how many empty columns in the
+		* print function.
+		* 
+		* this is probably garbage but not sure how to make this better
 		*/
-		if (iterator->next == nullptr) { return 0; }
+		if (hasNext()) {return 0; }
 		QuadNode* first = iterator;
 		QuadNode* second = iterator->next;
 		int degrees = 0;
@@ -124,6 +130,71 @@ private:
 
 	}
 
+	void deleteColumn(QuadNode* subject) {
+		/*
+		* Snips a column out.
+		*/
+		QuadNode* previous = nullptr;
+		if (subject == nullptr) {
+			return;
+		}
+
+
+		//make sure we are at the root
+		while (subject->down) {
+			subject = subject->down;
+		}
+
+		//remove and sew up hole
+		//if the value is on sentinel row, we need to redefine with next
+
+
+		while (subject) {
+			if (subject->prev) {
+				subject->prev->next = subject->next;
+			}
+			if (subject->next) {
+				subject->next->prev = subject->prev;
+			}
+			previous = subject;
+			subject = subject->up;
+			delete previous;
+		}
+	}
+
+	void shrinkList(){
+		/*
+		* removes any layers with just a sentinel node (empty layer)
+		*/
+
+		resetIt(); //go to sentinel
+		while (iterator) {
+			if (onSentinelColumn() && !(itNext())) {
+				sentinel = sentinel->down;
+				delete iterator;
+				resetIt();
+				layers--;
+			}
+		}
+	}
+
+	void clearList() {
+		//annihilate list. go to end. work back
+		//used for destruction, does not take care of shrinking, just resets
+
+		resetIt();
+		while (itNext()) {
+			deleteColumn(iterator);
+		}
+
+		deleteColumn(sentinel);
+
+		layers = 0;
+
+		sentinel = iterator = nullptr;
+		srand(time(nullptr));
+
+	}
 
 	bool itUp() {
 		if (hasUp()) {
@@ -204,6 +275,7 @@ private:
 
 		return !hasPrev();
 	}
+
 
 	void updateIt(KeyComparable& key, Value& value) {
 		/*
@@ -314,7 +386,7 @@ private:
 			previous = subject;
 
 
-			debug_check();
+			//debug_check();
 
 			subject = new QuadNode(previous, nullptr, nullptr, nullptr,
 				key, value);
@@ -355,7 +427,7 @@ private:
 				*
 				* for clarity, we will make this directly at the sentinel
 				*/
-				debug_check();
+				//debug_check();
 				sentinel->up = new QuadNode(nullptr, sentinel, nullptr,
 					nullptr, base->key, base->value);
 				sentinel = sentinel->up;
@@ -376,8 +448,20 @@ public:
 		sentinel = nullptr;
 		iterator = sentinel;
 		layers = 0;
-		created = 0; // debug to prevent run away memory creation
+
 		srand(time(nullptr));
+	}
+
+	~SkipList() {
+		clearList();
+	}
+
+	bool remove(const KeyComparable& key) {
+		if (!find(key)) { return false; }
+
+		deleteColumn(iterator);
+		
+		shrinkList();
 	}
 
 	bool find(const KeyComparable& key) {
@@ -426,14 +510,16 @@ public:
 	void bootstrap(Value& value, KeyComparable& key) {
 		//bootstrap an initial sentinel at first element inserted
 		//moves iterator to the fresh sentinel
+		srand(time(nullptr));
 		if (!isEmpty()) { return; }
-		debug_check();
+		//debug_check();
 		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
 		iterator = sentinel;
 		layers++;
 	}
 
 	bool insert(Value& value, KeyComparable& key) {
+		srand(time(nullptr));
 		if (find(key) == true) {
 			return false;	//block duplicate
 		}
