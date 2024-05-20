@@ -6,7 +6,7 @@
 * Programmer: June
 *
 * Description: Header file for the program's node. Due to templatizing bullcrap
-* this also contains an internal Quad Node. There's a bunch of srand() to 
+* this also contains an internal Quad Node. There's a bunch of srand() to
 * make sure the seed is different whenever possible
 */
 
@@ -106,13 +106,13 @@ private:
 		* start with iterator, go to base,
 		*
 		* we move first forward if they dont directly connect, count it
-		* 
+		*
 		* this is primarally used for generating how many empty columns in the
 		* print function.
-		* 
+		*
 		* this is probably garbage but not sure how to make this better
 		*/
-		if (hasNext()) {return 0; }
+		if (iterator->next == nullptr) { return 0; }
 		QuadNode* first = iterator;
 		QuadNode* second = iterator->next;
 		int degrees = 0;
@@ -130,19 +130,22 @@ private:
 
 	}
 
-	void deleteColumn(QuadNode* subject) {
+	QuadNode* deleteColumn(QuadNode* subject) {
 		/*
-		* Snips a column out.
+		* Snips a column out. Returns next immediate sucessor
 		*/
 		QuadNode* previous = nullptr;
+		QuadNode* returnAddress = nullptr;
 		if (subject == nullptr) {
-			return;
+			return nullptr;
 		}
 
 
 		//make sure we are at the root
-		while (subject->down) {
+
+		while (subject->down != nullptr) {
 			subject = subject->down;
+			returnAddress = subject->next;
 		}
 
 		//remove and sew up hole
@@ -150,31 +153,31 @@ private:
 
 
 		while (subject) {
-			if (subject->prev) {
+			if (subject->prev != nullptr) {
 				subject->prev->next = subject->next;
 			}
-			if (subject->next) {
+			if (subject->next != nullptr) {
 				subject->next->prev = subject->prev;
 			}
 			previous = subject;
 			subject = subject->up;
 			delete previous;
 		}
+
+		return returnAddress;
 	}
 
-	void shrinkList(){
+	void shrinkList() {
 		/*
 		* removes any layers with just a sentinel node (empty layer)
 		*/
+		while (sentinel && sentinel->next == nullptr) {
+			iterator = sentinel;
+			sentinel = sentinel->down;
+			sentinel->up = nullptr;
+			delete iterator;
+			layers--;
 
-		resetIt(); //go to sentinel
-		while (iterator) {
-			if (onSentinelColumn() && !(itNext())) {
-				sentinel = sentinel->down;
-				delete iterator;
-				resetIt();
-				layers--;
-			}
 		}
 	}
 
@@ -183,8 +186,8 @@ private:
 		//used for destruction, does not take care of shrinking, just resets
 
 		resetIt();
-		while (itNext()) {
-			deleteColumn(iterator);
+		while (hasCurr()) {
+			iterator = deleteColumn(iterator);
 		}
 
 		deleteColumn(sentinel);
@@ -460,7 +463,7 @@ public:
 		if (!find(key)) { return false; }
 
 		deleteColumn(iterator);
-		
+
 		shrinkList();
 	}
 
@@ -510,7 +513,6 @@ public:
 	void bootstrap(Value& value, KeyComparable& key) {
 		//bootstrap an initial sentinel at first element inserted
 		//moves iterator to the fresh sentinel
-		srand(time(nullptr));
 		if (!isEmpty()) { return; }
 		//debug_check();
 		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
@@ -519,7 +521,6 @@ public:
 	}
 
 	bool insert(Value& value, KeyComparable& key) {
-		srand(time(nullptr));
 		if (find(key) == true) {
 			return false;	//block duplicate
 		}
@@ -572,7 +573,7 @@ public:
 		QuadNode* temp = sentinel;
 		iterator = sentinel;
 
-		
+
 
 
 
