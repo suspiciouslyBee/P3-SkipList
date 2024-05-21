@@ -1,11 +1,17 @@
 
-
+/*
+* File: Main
+*
+* Programmer: June
+*
+* Description: Runs a test case of Skiplist.h with a fake large data set, and
+* manipulation thereof. 
+*
+* This is quick, dirty, and not very optimal... but it works...
+*
+*/
 #include <iostream>
 #include <random>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <sstream>
 #include "SkipList.h"
 
 using namespace std;

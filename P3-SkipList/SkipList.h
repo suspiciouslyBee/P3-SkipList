@@ -7,10 +7,14 @@
 *
 * Description: Header file for the program's node. Due to templatizing bullcrap
 * this also contains an internal Quad Node. There's a bunch of srand() to
-* make sure the seed is different whenever possible
+* make sure the seed is different whenever possible.
+* 
+* This is quick, dirty, and not very optimal... but it works...
+* 
+* WARNING: Copy constructor is untested!
+* 
 */
 
-constexpr auto MAX_NODES = 200000;
 #include <random>
 #include <iomanip>
 #include <iostream>
@@ -59,19 +63,12 @@ private:
 	//the sentinel ptr will be at the top of the sentinel "column"
 	QuadNode* sentinel;
 	int layers;
-	//int created;
+
 
 	//internal iterator
 	//TODO: port this to be compatible with STL
 	mutable QuadNode* iterator;
-	/*
-	void debug_check() {
-		//this debug lets me prevent the computer from locking up
-		if (created > MAX_NODES) {
-			exit(-2);
-		}
 
-	}*/
 	int randLayers() { //helper to find number of additional layers
 		int i = 1;
 		while (rand() & 1) {
@@ -350,7 +347,6 @@ private:
 			previous = subject;
 
 
-			//debug_check();
 
 			subject = new QuadNode(previous, nullptr, nullptr, nullptr,
 				key, value);
@@ -551,6 +547,8 @@ public:
 	}
 
 	bool remove(const KeyComparable& key) {
+		//removes a node with matching key, shrinks list when applicable
+
 		if (!find(key)) { return false; }
 
 		deleteColumn(iterator);
@@ -569,8 +567,6 @@ public:
 		* on false:
 		* no match; iterator points to node immedately less.
 		*
-		* WARNING: this ASSUMES next->key exists. please make sure the node
-		* has a key
 		*
 		*/
 
@@ -584,6 +580,7 @@ public:
 		* Usage: Specify the layer to reset the iterator to.
 		*
 		* Default value is the top layer, but this can be overridden.
+		* has OOB checks
 		*/
 		if (i > layers) {
 			i = layers;
@@ -603,10 +600,11 @@ public:
 	}
 
 	void bootstrap(Value& value, KeyComparable& key) {
+
 		//bootstrap an initial sentinel at first element inserted
 		//moves iterator to the fresh sentinel
+
 		if (!isEmpty()) { return; }
-		//debug_check();
 		sentinel = new QuadNode(nullptr, nullptr, nullptr, nullptr, value, key);
 		iterator = sentinel;
 		layers = 1;
@@ -633,10 +631,7 @@ public:
 		//we need to initialize the list if we are empty
 		//couldnt earlier because we had no values to work with
 		bootstrap(value, key);
-		//printList();
-		int rando = randLayers();
-		//cout << endl << key << " gen'd a " << rando << endl;
-		if (!linkColumn(createColumn(key, value, rando))) {
+		if (!linkColumn(createColumn(key, value, randLayers()))) {
 			return false;
 		}
 		//cout << endl;
