@@ -432,13 +432,13 @@ private:
 			}
 			while (hasCurr()) {
 				if (!hasPrev()) {
-					out << setw(3) << thisKey() << " ||";
+					out << setw(4) << thisKey() << " ||";
 				}
 				else {
-					out << setw(3) << thisKey();
+					out << setw(4) << thisKey();
 				}
 				for (int i = directSucessor(); i > 0; i--) {
-					out << setw(3) << " ";
+					out << setw(4) << " ";
 				}
 				iterator = iterator->next;
 			}
@@ -470,6 +470,8 @@ public:
 	}
 	SkipList(const SkipList& rhs) {
 		//deep copy
+		//TODO: rewrite me to directly copy values instead of just counting
+
 		this->iterator = nullptr;
 		this->layers = rhs.layers;
 		rhs.resetIt(rhs.layers); // go to bottom
